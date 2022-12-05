@@ -1,11 +1,11 @@
 /**
  * @file    loop_mesh_builder.cpp
  *
- * @author  FULL NAME <xrepka07@stud.fit.vutbr.cz>
+ * @author  Samuel Repka <xrepka07@stud.fit.vutbr.cz>
  *
  * @brief   Parallel Marching Cubes implementation using OpenMP loops
  *
- * @date    DATE
+ * @date    5.12.2022
  **/
 
 #include <iostream>
@@ -25,7 +25,6 @@ unsigned LoopMeshBuilder::marchCubes(const ParametricScalarField& field)
 {
     // 1. Compute total number of cubes in the grid.
     size_t totalCubesCount = mGridSize * mGridSize * mGridSize;
-
     unsigned totalTriangles = 0;
 
     // 2. Loop over each coordinate in the 3D grid.
@@ -33,10 +32,6 @@ unsigned LoopMeshBuilder::marchCubes(const ParametricScalarField& field)
     #pragma omp parallel for default(none) shared(mGridSize, totalCubesCount, field) reduction(+ : totalTriangles) schedule(guided)
     for (size_t i = 0; i < totalCubesCount; ++i)
     {
-        // #pragma omp critical
-        // std::cout << i << "\n";
-        // std::cout << cubeOffset.x << ", " << cubeOffset.y << ", " << cubeOffset.z << "\n";
-
         // 3. Compute 3D position in the grid.
         Vec3_t<float> cubeOffset(i % mGridSize,
             (i / mGridSize) % mGridSize,
@@ -63,8 +58,6 @@ float LoopMeshBuilder::evaluateFieldAt(const Vec3_t<float>& pos, const Parametri
 
     // 2. Find minimum square distance from points "pos" to any point in the
     //    field.
-
-
     // #pragma omp parallel for default(none) shared(pos, pPoints, count) reduction(min : value)
     for (unsigned i = 0; i < count; ++i)
     {

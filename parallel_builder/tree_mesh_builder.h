@@ -1,11 +1,11 @@
 /**
  * @file    tree_mesh_builder.h
  *
- * @author  FULL NAME <xrepka07@stud.fit.vutbr.cz>
+ * @author  Samuel Repka <xrepka07@stud.fit.vutbr.cz>
  *
  * @brief   Parallel Marching Cubes implementation using OpenMP tasks + octree early elimination
  *
- * @date    DATE
+ * @date    5.12.2022
  **/
 
 #ifndef TREE_MESH_BUILDER_H
@@ -22,7 +22,12 @@ protected:
     unsigned marchCubes(const ParametricScalarField& field);
     float evaluateFieldAt(const Vec3_t<float>& pos, const ParametricScalarField& field);
     void emitTriangle(const Triangle_t& triangle);
-    const Triangle_t* getTrianglesArray() const { return nullptr; }
+    const Triangle_t* getTrianglesArray() const { return mTriangles.data(); }
+    void octreeDive(Vec3_t<float> pt, int size, const ParametricScalarField& field);
+
+    std::vector<Triangle_t> mTriangles; ///< Temporary array of triangles
+    static constexpr float C32 = 0.8660254037844386;
+
 };
 
 #endif // TREE_MESH_BUILDER_H
