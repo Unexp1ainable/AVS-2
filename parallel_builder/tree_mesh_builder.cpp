@@ -102,7 +102,7 @@ void TreeMeshBuilder::octreeSubdivide(Vec3_t<float> pt, int size, const Parametr
         for (int j = 0; j < 2; j++) {
             for (int k = 0; k < 2; k++)
             {
-                #pragma omp task firstprivate(i,j,k) shared(field)
+                #pragma omp task
                 {
                     Vec3_t<float> newPoint(pt.x + (newsize * i), pt.y + (newsize * j), pt.z + (newsize * k));
                     Vec3_t<float> newPointContinuous(

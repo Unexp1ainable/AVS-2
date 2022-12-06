@@ -1,10 +1,11 @@
 cmake_minimum_required(VERSION 3.10)
 
-
 project(PMC CXX C)
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 set(CMAKE_VERBOSE_MAKEFILE 1)
+
+
 
 if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
   # using Clang
