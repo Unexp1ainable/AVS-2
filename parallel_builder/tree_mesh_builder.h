@@ -27,9 +27,9 @@ protected:
     void octreeDive(Vec3_t<float> pt, int size, const ParametricScalarField& field);
     void octreeSubdivide(Vec3_t<float> pt, int size, const ParametricScalarField& field);
 
-    std::vector<std::vector<Triangle_t>> mPerThreadTriangles;
+    std::vector<std::vector<Triangle_t>> mPerThreadTriangles;   ///< array of arrays of triangles
     std::vector<Triangle_t> mTriangles; ///< Temporary array of triangles
-    static constexpr float C32 = 0.8660254037844386;
+    static constexpr float C32 = 0.8660254037844386; ///< sqrt(3)/2
 
 };
 

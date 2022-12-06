@@ -75,21 +75,18 @@ float TreeMeshBuilder::evaluateFieldAt(const Vec3_t<float>& pos, const Parametri
 
 void TreeMeshBuilder::emitTriangle(const BaseMeshBuilder::Triangle_t& triangle)
 {
+    // store triangle to the vector that belongs to this thread
     int n = omp_get_thread_num();
     mPerThreadTriangles[n].push_back(triangle);
 }
 
 void TreeMeshBuilder::octreeDive(Vec3_t<float> pt, int size, const ParametricScalarField& field)
 {
-    {
-        {
-            if (size == 1) {
-                buildCube(pt, field);
-            }
-            else {
-                octreeSubdivide(pt, size, field);
-            }
-        }
+    if (size == 1) {
+        buildCube(pt, field);
+    }
+    else {
+        octreeSubdivide(pt, size, field);
     }
 }
 
@@ -105,6 +102,7 @@ void TreeMeshBuilder::octreeSubdivide(Vec3_t<float> pt, int size, const Parametr
                 #pragma omp task
                 {
                     Vec3_t<float> newPoint(pt.x + (newsize * i), pt.y + (newsize * j), pt.z + (newsize * k));
+                    // default coordinates point to the corner of the cube, we need to shift it
                     Vec3_t<float> newPointContinuous(
                         (newPoint.x + shift) * mGridResolution,
                         (newPoint.y + shift) * mGridResolution,

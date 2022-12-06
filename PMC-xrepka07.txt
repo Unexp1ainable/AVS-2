@@ -23,39 +23,60 @@ Login: xrepka07
    vlákien je pomerne vyvážená.
 
 3) Jakým způsobem zajišťujete ukládání trojúhelníků z několika vláken současně?
-   Použil som "#pragma omp critical".
+   Použil som "#pragma omp critical".  Chcel som skúsiť niečo iné ako v tree
+   implementácii.
 
 
 Úloha 2: Paralelní průchod stromem
 ===============================================================================
 
 1) Stručně popište použití OpenMP tasků ve vašem řešení.
-Task sa generuje pre každý nový oktant, nezávisle od toho či bude spracovaný
-alebo nie. Takto si vlákno počíta, či ho má spracovať alebo nie a prípadne ho aj
-spracuje
+
+   Task sa generuje pre každý nový oktant, nezávisle od toho či bude spracovaný
+   alebo nie. Takto si vlákno počíta, či ho má spracovať alebo nie a prípadne ho aj
+   spracuje
 
 2) Jaký vliv má na vaše řešení tzv. "cut-off"? Je vhodné vytvářet nový 
    task pro každou krychli na nejnižší úrovni?
-Nie, pretože to je každopádne práca len pre jedno vlákno, tak to môže rovno 
-spraviť to vlákno, ktoré tú kocku našlo.
+
+   Nie, pretože to je každopádne práca len pre jedno vlákno, tak to môže rovno 
+   spraviť to vlákno, ktoré tú kocku našlo.
 
 3) Jakým způsobem zajišťujete ukládání trojúhelníků z několika vláken současně?
-Pre každé vlákno som vytvoril osobitný std::vector. Každé vlákno píše do vektoru,
-ktoré vyberá podľa svojho id. Takto netreba synchronizáciu a stačí na konci spojiť
-jednotlivé vektory. (chcel som použiť niečo iné ako v loop variante)
+
+   Pre každé vlákno som vytvoril osobitný std::vector. Každé vlákno píše do vektoru,
+   ktoré vyberá podľa svojho id. Takto netreba synchronizáciu a stačí na konci spojiť
+   jednotlivé vektory. (chcel som použiť niečo iné ako v loop variante)
 
 Úloha 3: Grafy škálování všech řešení
 ===============================================================================
 
 1) Stručně zhodnoťte efektivitu vytvořených řešení (na základě grafů škálování).
 
+   Neprekvapivo tree implementácia je rýchlejšia ako loop implementácia. Taktiež 
+   lepšie škáluje, predpokladám, že kvôli tomu že nemá kritickú sekciu pri 
+   zapisovaní a všeobecne robí menej práce.
+
 2) V jakém případě (v závislosti na počtu bodů ve vstupním souboru a velikosti 
    mřížky) bude vaše řešení 1. úlohy neefektivní? (pokud takový případ existuje)
+   
+   Nemyslím si, že existuje prípad kedy moja loop implementácia bude menej efektívna
+   ako referenčná.
 
 3) Je (nebo není) stromový algoritmus efektivnější z pohledu slabého škálování 
    vzhledem ke vstupu?
 
-4) Jaký je rozdíle mezi silným a slabým škálováním?
+   Zo začiatku škáluje horšie. Otázne je ako by to bolo pri škálovaní nad 32 
+   vlákien.
+
+4) Jaký je rozdíl mezi silným a slabým škálováním?
+
+   Silné škálovanie ukazuje dobu vykonávania konštatného množstva celkovej práce 
+   vzhľadom k rôznym počtom paralelných vlákien/jadier/procesorov.
+
+   Slabé škálovanie ukazuje dobu vykonania konštantného množstva práce na jedno 
+   paralelné vlákno/jadro/procesor vzhľadom k rôznym počtom paralelných 
+   vlákien/jadier/procesorov.
 
 Úloha 4: Analýza využití jader pomocí VTune
 ================================================================================
@@ -63,15 +84,20 @@ jednotlivé vektory. (chcel som použiť niečo iné ako v loop variante)
 1) Jaké bylo průměrné využití jader pro všechny tři implementace s omezením na 
    18 vláken? Na kolik procent byly využity?
    
-   ref:
-   loop:
-   tree:
+   ref: 2.8%
+   loop: 48.5%
+   tree: 42.7%
 
 2) Jaké bylo průměrné využití jader pro všechny tři implementace s využitím 
    všech jader? Na kolik procent se podařilo využít obě CPU?
    
-   ref:
-   loop:
-   tree:
+   ref: 2.8%
+   loop: 88.6%
+   tree: 72.8%
 
 3) Jaké jsou závěry z těchto měření?
+
+   Jednovláknovému programu je jedno na koľkých vláknach ho spustíme.
+   Loop implementácia má väčšie využitie procesoru ako tree, čo je spôsobené
+   pravdepodobne lepším rozdelením práce. Celkový čas loop implementácie je 
+   ale oveľa vyšší, lebo toho musí počítať viac.
