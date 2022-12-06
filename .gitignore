@@ -4,3 +4,6 @@ report
 a.out
 .gitignore
 test.cpp
+build*
+report
+AVS-vtune*
