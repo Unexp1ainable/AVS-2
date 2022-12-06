@@ -30,11 +30,19 @@ Login: xrepka07
 ===============================================================================
 
 1) Stručně popište použití OpenMP tasků ve vašem řešení.
+Task sa generuje pre každý nový oktant, nezávisle od toho či bude spracovaný
+alebo nie. Takto si vlákno počíta, či ho má spracovať alebo nie a prípadne ho aj
+spracuje
 
 2) Jaký vliv má na vaše řešení tzv. "cut-off"? Je vhodné vytvářet nový 
    task pro každou krychli na nejnižší úrovni?
+Nie, pretože to je každopádne práca len pre jedno vlákno, tak to môže rovno 
+spraviť to vlákno, ktoré tú kocku našlo.
 
 3) Jakým způsobem zajišťujete ukládání trojúhelníků z několika vláken současně?
+Pre každé vlákno som vytvoril osobitný std::vector. Každé vlákno píše do vektoru,
+ktoré vyberá podľa svojho id. Takto netreba synchronizáciu a stačí na konci spojiť
+jednotlivé vektory. (chcel som použiť niečo iné ako v loop variante)
 
 Úloha 3: Grafy škálování všech řešení
 ===============================================================================

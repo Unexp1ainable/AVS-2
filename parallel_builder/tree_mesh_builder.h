@@ -23,8 +23,11 @@ protected:
     float evaluateFieldAt(const Vec3_t<float>& pos, const ParametricScalarField& field);
     void emitTriangle(const Triangle_t& triangle);
     const Triangle_t* getTrianglesArray() const { return mTriangles.data(); }
-    void octreeDive(Vec3_t<float> pt, int size, const ParametricScalarField& field);
 
+    void octreeDive(Vec3_t<float> pt, int size, const ParametricScalarField& field);
+    void octreeSubdivide(Vec3_t<float> pt, int size, const ParametricScalarField& field);
+
+    std::vector<std::vector<Triangle_t>> mPerThreadTriangles;
     std::vector<Triangle_t> mTriangles; ///< Temporary array of triangles
     static constexpr float C32 = 0.8660254037844386;
 

@@ -11,13 +11,14 @@
 #include <iostream>
 #include <math.h>
 #include <limits>
+#include <omp.h>
 
 #include "tree_mesh_builder.h"
 
 TreeMeshBuilder::TreeMeshBuilder(unsigned gridEdgeSize)
-    : BaseMeshBuilder(gridEdgeSize, "Octree")
+    : BaseMeshBuilder(gridEdgeSize, "Octree"),
+    mPerThreadTriangles(omp_get_max_threads())
 {
-
 }
 
 unsigned TreeMeshBuilder::marchCubes(const ParametricScalarField& field)
@@ -33,6 +34,13 @@ unsigned TreeMeshBuilder::marchCubes(const ParametricScalarField& field)
             octreeDive(Vec3_t<float>(0), mGridSize, field);
         }
     }
+
+    // merge thread vectors
+    for (int i = 0; i < mPerThreadTriangles.size(); i++) {
+        auto t = mPerThreadTriangles[i];
+        mTriangles.insert(mTriangles.end(), t.begin(), t.end());
+    }
+
     return mTriangles.size();
 }
 
@@ -67,8 +75,8 @@ float TreeMeshBuilder::evaluateFieldAt(const Vec3_t<float>& pos, const Parametri
 
 void TreeMeshBuilder::emitTriangle(const BaseMeshBuilder::Triangle_t& triangle)
 {
-    #pragma omp critical
-    mTriangles.push_back(triangle);
+    int n = omp_get_thread_num();
+    mPerThreadTriangles[n].push_back(triangle);
 }
 
 void TreeMeshBuilder::octreeDive(Vec3_t<float> pt, int size, const ParametricScalarField& field)
@@ -76,32 +84,37 @@ void TreeMeshBuilder::octreeDive(Vec3_t<float> pt, int size, const ParametricSca
     {
         {
             if (size == 1) {
-                #pragma omp task firstprivate(pt, field)
-                {
-                    buildCube(pt, field);
-                }
+                buildCube(pt, field);
             }
             else {
-                int newsize = size / 2;
-                float shift = newsize / 2.f;
+                octreeSubdivide(pt, size, field);
+            }
+        }
+    }
+}
 
-                for (int i = 0; i < 2; i++) {
-                    for (int j = 0; j < 2; j++) {
-                        for (int k = 0; k < 2; k++) {
-                            Vec3_t<float> newPoint(pt.x + (newsize * i), pt.y + (newsize * j), pt.z + (newsize * k));
-                            Vec3_t<float> newPointContinuous(
-                                (newPoint.x + shift) * mGridResolution,
-                                (newPoint.y + shift) * mGridResolution,
-                                (newPoint.z + shift) * mGridResolution
-                            );
 
-                            float Fp = evaluateFieldAt(newPointContinuous, field);
-                            float t = mIsoLevel + C32 * newsize * mGridResolution;
-                            if (Fp <= t) {
-                                #pragma omp task firstprivate(newPoint, newsize) shared(field)
-                                octreeDive(newPoint, newsize, field);
-                            }
-                        }
+void TreeMeshBuilder::octreeSubdivide(Vec3_t<float> pt, int size, const ParametricScalarField& field) {
+    int newsize = size / 2;
+    float shift = newsize / 2.f;
+
+    for (int i = 0; i < 2; i++) {
+        for (int j = 0; j < 2; j++) {
+            for (int k = 0; k < 2; k++)
+            {
+                #pragma omp task firstprivate(i,j,k) shared(field)
+                {
+                    Vec3_t<float> newPoint(pt.x + (newsize * i), pt.y + (newsize * j), pt.z + (newsize * k));
+                    Vec3_t<float> newPointContinuous(
+                        (newPoint.x + shift) * mGridResolution,
+                        (newPoint.y + shift) * mGridResolution,
+                        (newPoint.z + shift) * mGridResolution
+                    );
+
+                    float Fp = evaluateFieldAt(newPointContinuous, field);
+                    float t = mIsoLevel + C32 * newsize * mGridResolution;
+                    if (Fp <= t) {
+                        octreeDive(newPoint, newsize, field);
                     }
                 }
             }
